@@ -253,17 +253,42 @@
 
     function updateTicker(alerts) {
         const track = document.getElementById('ticker-track');
-        const criticalAlerts = alerts.filter(a => PULSE_EVENTS.includes(a.properties.event));
         
-        if (criticalAlerts.length === 0) {
+        const uniqueAlerts = [];
+        const seen = new Set();
+        
+        alerts.forEach(a => {
+            const p = a.properties;
+            if (PULSE_EVENTS.includes(p.event)) {
+                // 1. Sort the area descriptions alphabetically to catch identically-zoned warnings 
+                // that happen to list counties in a different order.
+                const sortedAreas = (p.areaDesc || "").split(';').map(s => s.trim()).sort().join('|');
+                const tickerKey = `${p.event}|${sortedAreas}`;
+                
+                if (!seen.has(tickerKey)) {
+                    seen.add(tickerKey);
+                    uniqueAlerts.push(a);
+                }
+            }
+        });
+        
+        if (uniqueAlerts.length === 0) {
             track.innerHTML = '<span class="text-[10px] font-mono text-red-200/60 px-8 italic uppercase tracking-widest">No active critical alerts in national feed</span>';
             return;
         }
 
-        const tickerItems = criticalAlerts.map((a, idx) => {
+        const tickerItems = uniqueAlerts.map((a) => {
             const p = a.properties;
-            const aid = p.id || `ticker-id-${idx}`;
-            const time = new Date(p.issued || new Date()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            const aid = p.id;
+            
+            let time = "--:--";
+            try {
+                if (p.sent) {
+                    const d = new Date(p.sent);
+                    time = d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                }
+            } catch(e) { console.error("Time parse error", e); }
+
             return `<span class="ticker-item inline-flex items-center gap-2 px-6 py-1" onclick="focusOnAlert('${aid}')">
                 <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
                 <b class="text-white text-[11px]">${p.event.toUpperCase()}</b> 
@@ -272,8 +297,9 @@
             </span>`;
         }).join('<span class="text-red-500/50 mx-2">|</span>');
 
-        track.innerHTML = tickerItems + tickerItems;
-        track.style.animationDuration = `${Math.max(25, criticalAlerts.length * 10)}s`;
+        // 2. Output exactly ONCE. Removing the "+ tickerItems" duplication fixes the double rendering issue.
+        track.innerHTML = tickerItems; 
+        track.style.animationDuration = `${Math.max(25, uniqueAlerts.length * 10)}s`;
     }
 
     function checkEmergencyIntersections(alerts) {
@@ -341,9 +367,6 @@
             const description = alertProps.description || "";
             const isStatement = alertProps.event.toLowerCase().includes('statement');
             
-            // 1. FIX FALSE EXPIRATION DATES FOR STATEMENTS
-            // For Special Weather Statements, the metadata 'expires' is often just a wire purge time.
-            // We only show an expiration if explicitly stated in the text.
             if (type === 'ends' && isStatement) {
                 const textMatch = (headline + " " + description).match(/until\s+([A-Za-z]*\s*\d*\s*a?t?\s*\d+:?\d*\s*[AP]M\s+[A-Z]{3,4})/i);
                 if (textMatch && textMatch[1]) return textMatch[1].trim().replace(/([AP]M)([A-Z])/, '$1 $2');
@@ -352,9 +375,6 @@
 
             if (!isoStr || isoStr === 'null' || isoStr === 'undefined') return "-";
 
-            // 2. FIX CST OVERRIDE / TIMEZONE CONVERSION
-            // NWS ISO strings include local time + offset (e.g., 2026-03-02T16:00:00-05:00).
-            // We parse the exact string digits to keep the NWS intended local time, preventing browser conversion.
             try {
                 const parts = isoStr.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
                 if (parts) {
@@ -367,7 +387,6 @@
                     hours = hours % 12 || 12;
                     const minutes = parts[5];
                     
-                    // Scan text for the actual issuing office's 3-letter timezone
                     const tzMatch = (headline + " " + description).match(/\b(EST|EDT|CST|CDT|MST|MDT|PST|PDT|AST|ADT|HST|AKST|AKDT)\b/i);
                     const tz = tzMatch ? tzMatch[1].toUpperCase() : "";
                     
@@ -375,7 +394,6 @@
                 }
             } catch (e) { }
             
-            // Ultimate fallback
             try {
                 const d = new Date(isoStr);
                 return d.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short' });
@@ -411,14 +429,12 @@
             attribution: '&copy; OpenStreetMap contributors'
         }).addTo(map);
 
-        // NEXRAD Radar Layer
         radarLayer = L.tileLayer.wms(RADAR_URL, {
             layers: 'nexrad-n0q-900913',
             format: 'image/png',
             transparent: true,
             opacity: 0.65,
             attribution: "Weather data © IEM NEXRAD",
-            //Add initial cache buster
             t: new Date().getTime()
         });
 
@@ -467,7 +483,6 @@
             }
         }).addTo(map);
 
-        // Layer Toggle Control
         const overlays = {
             "<span style='color: #60a5fa'>📡 Live Radar - NEXRAD</span>": radarLayer,
             "<span style='color: #60a5fa'>⭕ 5-Mile Radius</span>": assetBuffer,
@@ -486,7 +501,6 @@
             fetchPointForecast(lat.toFixed(4), lng.toFixed(4));
         });
 
-        // Pulse logic for animations
         setInterval(() => {
             pulseOpacity = pulseIncreasing ? pulseOpacity + 0.05 : pulseOpacity - 0.05;
             if (pulseOpacity >= 0.9 || pulseOpacity <= 0.2) pulseIncreasing = !pulseIncreasing;
