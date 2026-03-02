@@ -338,6 +338,16 @@
         forecastSection.classList.add('hidden');
         
         document.getElementById('detail-title').innerText = alertProps.event;
+
+        // Format Issued and Expiration times
+        const formatTime = (isoStr) => {
+            if (!isoStr) return "N/A";
+            const d = new Date(isoStr);
+            return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', month: 'short', day: 'numeric' });
+        };
+
+        const issuedTime = formatTime(alertProps.sent);
+        const endsTime = formatTime(alertProps.ends || alertProps.expires);
         
         const description = alertProps.description || "No detailed description available.";
         const instruction = alertProps.instruction ? `<div class="mt-4 p-3 bg-blue-900/20 border border-blue-500/30 rounded-xl"><b>Instructions:</b><br>${alertProps.instruction}</div>` : "";
