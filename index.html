@@ -99,7 +99,7 @@
             </div>
             <div>
                 <h1 class="text-xl font-black tracking-tighter text-white uppercase leading-none">Weather Operations Dashboard</h1>
-                <p class="text-blue-500 text-[10px] font-mono uppercase tracking-[0.3em] mt-1">Real-Time Weather Intelligence for WashU</p>
+                <p class="text-blue-500 text-[10px] font-mono uppercase tracking-[0.3em] mt-1">Real-Time Weather Intelligence</p>
             </div>
         </div>
 
@@ -134,7 +134,7 @@
         </div>
         <div id="ticker-container" class="flex-grow overflow-hidden relative h-full flex items-center">
             <div id="ticker-track" class="ticker-content">
-                <span class="text-[10px] font-mono text-red-200 px-8 italic opacity-50 uppercase tracking-widest">Initializing Critical Alerts Monitoring...</span>
+                <span class="text-[10px] font-mono text-red-200 px-8 italic opacity-50 uppercase tracking-widest">Initializing Monitoring System...</span>
             </div>
         </div>
     </div>
@@ -147,11 +147,11 @@
                 <div class="grid grid-cols-1 gap-4 text-[10px]">
                     <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 text-center hover:border-blue-500/50 transition-colors">
                         <div class="text-4xl font-black text-white leading-none" id="stat-visible">0</div>
-                        <div class="text-[10px] text-slate-500 uppercase font-black tracking-widest mt-2">Total Number of Active Warnings, Alerts, and Advisories</div>
+                        <div class="text-[10px] text-slate-500 uppercase font-black tracking-widest mt-2">Warnings, Watcjes, and Advisories</div>
                     </div>
                     <div class="bg-red-950/20 p-6 rounded-2xl border border-red-900/30 text-center hover:bg-red-950/30 transition-colors">
                         <div class="text-4xl font-black text-red-500 leading-none" id="stat-high">0</div>
-                        <div class="text-[10px] text-red-700 uppercase font-black tracking-widest mt-2">Active Critical Alerts</div>
+                        <div class="text-[10px] text-red-700 uppercase font-black tracking-widest mt-2">Critical Warnings and Watches</div>
                     </div>
                 </div>
             </div>
@@ -161,7 +161,7 @@
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-[10px] font-black uppercase tracking-widest text-slate-500 flex items-center gap-2">
                         <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-                        Event Filter
+                        Filter by Alert Type
                     </h2>
                     <button id="clear-filters" class="text-[9px] text-blue-500 hover:underline font-bold uppercase">Reset</button>
                 </div>
@@ -256,7 +256,7 @@
         const criticalAlerts = alerts.filter(a => PULSE_EVENTS.includes(a.properties.event));
         
         if (criticalAlerts.length === 0) {
-            track.innerHTML = '<span class="text-[10px] font-mono text-red-200/60 px-8 italic uppercase tracking-widest">No active critical life-safety alerts in national feed</span>';
+            track.innerHTML = '<span class="text-[10px] font-mono text-red-200/60 px-8 italic uppercase tracking-widest">No active critical alerts in national feed</span>';
             return;
         }
 
@@ -413,7 +413,7 @@
         const overlays = {
             "<span style='color: #60a5fa'>📡 Live Radar - NEXRAD</span>": radarLayer,
             "<span style='color: #60a5fa'>⭕ 5-Mile Radius</span>": assetBuffer,
-            "<span style='color: #60a5fa'>⚠️ Weather Warnings, Alerts, Advisories</span>": alertsLayer
+            "<span style='color: #60a5fa'>⚠️ Warnings, Watches, Advisories</span>": alertsLayer
         };
         L.control.layers(null, overlays, { collapsed: false, position: 'bottomleft' }).addTo(map);
 
