@@ -99,7 +99,7 @@
             </div>
             <div>
                 <h1 class="text-xl font-black tracking-tighter text-white uppercase leading-none">Weather Operations Dashboard</h1>
-                <p class="text-blue-500 text-[10px] font-mono uppercase tracking-[0.3em] mt-1">IDSS & Intelligence Monitoring</p>
+                <p class="text-blue-500 text-[10px] font-mono uppercase tracking-[0.3em] mt-1">Real-Time Weather Intelligence for WashU</p>
             </div>
         </div>
 
@@ -113,7 +113,7 @@
             </div>
             <div class="w-px h-8 bg-slate-800"></div>
             <div class="flex flex-col">
-                <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Last Intelligence Sync</span>
+                <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Last Sync</span>
                 <span id="sync-timestamp" class="text-[11px] font-mono text-white font-bold tracking-tight">--.--.-- | --:--</span>
             </div>
         </div>
@@ -134,7 +134,7 @@
         </div>
         <div id="ticker-container" class="flex-grow overflow-hidden relative h-full flex items-center">
             <div id="ticker-track" class="ticker-content">
-                <span class="text-[10px] font-mono text-red-200 px-8 italic opacity-50 uppercase tracking-widest">Initializing high-impact convective monitoring...</span>
+                <span class="text-[10px] font-mono text-red-200 px-8 italic opacity-50 uppercase tracking-widest">Initializing Critical Alerts Monitoring...</span>
             </div>
         </div>
     </div>
@@ -147,11 +147,11 @@
                 <div class="grid grid-cols-1 gap-4 text-[10px]">
                     <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 text-center hover:border-blue-500/50 transition-colors">
                         <div class="text-4xl font-black text-white leading-none" id="stat-visible">0</div>
-                        <div class="text-[10px] text-slate-500 uppercase font-black tracking-widest mt-2">Visible Events</div>
+                        <div class="text-[10px] text-slate-500 uppercase font-black tracking-widest mt-2">Total Number of Active Warnings, Alerts, and Advisories</div>
                     </div>
                     <div class="bg-red-950/20 p-6 rounded-2xl border border-red-900/30 text-center hover:bg-red-950/30 transition-colors">
                         <div class="text-4xl font-black text-red-500 leading-none" id="stat-high">0</div>
-                        <div class="text-[10px] text-red-700 uppercase font-black tracking-widest mt-2">Critical Alerts</div>
+                        <div class="text-[10px] text-red-700 uppercase font-black tracking-widest mt-2">Active Critical Alerts</div>
                     </div>
                 </div>
             </div>
@@ -184,12 +184,12 @@
 
                     <!-- Point Forecast Section -->
                     <div id="forecast-section" class="mb-4 border-b border-slate-800 pb-4 hidden">
-                        <div class="text-[10px] text-blue-400 font-bold mb-2 uppercase tracking-tighter">🌡️ Point Forecast (IDSS)</div>
+                        <div class="text-[10px] text-blue-400 font-bold mb-2 uppercase tracking-tighter">Weather Summary</div>
                         <div id="forecast-content" class="text-[11px] text-slate-300"></div>
                     </div>
 
                     <!-- Impact Section -->
-                    <div class="text-[10px] text-blue-400 font-bold mb-2 uppercase tracking-tighter">Impact Analysis</div>
+                    <div class="text-[10px] text-blue-400 font-bold mb-2 uppercase tracking-tighter">Alert Details</div>
                     <div id="detail-body" class="text-[11px] text-slate-300 leading-relaxed max-h-80 overflow-y-auto custom-scrollbar"></div>
                     <div id="click-coords" class="mt-4 text-[9px] text-slate-600 font-mono text-right"></div>
                 </div>
@@ -209,7 +209,7 @@
     const FIVE_MILE_METERS = 8046.72;
     const FIVE_MILE_MILES = 5;
 
-    const PULSE_EVENTS = ["Tornado Warning", "Flash Flood Warning", "Severe Thunderstorm Warning", "Flood Warning"];
+    const PULSE_EVENTS = ["Tornado Warning", "Tornado Watch", "Flash Flood Warning", "Severe Thunderstorm Warning", "Flood Warning"];
     
     const EVENT_PALETTE = {
         "Tornado Warning": "#FF0000",
@@ -256,7 +256,7 @@
         const criticalAlerts = alerts.filter(a => PULSE_EVENTS.includes(a.properties.event));
         
         if (criticalAlerts.length === 0) {
-            track.innerHTML = '<span class="text-[10px] font-mono text-red-200/60 px-8 italic uppercase tracking-widest">No active critical life-safety warnings in national feed</span>';
+            track.innerHTML = '<span class="text-[10px] font-mono text-red-200/60 px-8 italic uppercase tracking-widest">No active critical life-safety alerts in national feed</span>';
             return;
         }
 
@@ -411,9 +411,9 @@
 
         // Layer Toggle Control
         const overlays = {
-            "<span style='color: #60a5fa'>📡 Live Radar</span>": radarLayer,
-            "<span style='color: #60a5fa'>⭕ 5mi Safety Zone</span>": assetBuffer,
-            "<span style='color: #60a5fa'>⚠️ Weather Alerts</span>": alertsLayer
+            "<span style='color: #60a5fa'>📡 Live Radar - NEXRAD</span>": radarLayer,
+            "<span style='color: #60a5fa'>⭕ 5-Mile Radius</span>": assetBuffer,
+            "<span style='color: #60a5fa'>⚠️ Weather Warnings, Alerts, Advisories</span>": alertsLayer
         };
         L.control.layers(null, overlays, { collapsed: false, position: 'bottomleft' }).addTo(map);
 
@@ -423,7 +423,7 @@
             const { lat, lng } = e.latlng;
             document.getElementById('alert-detail-panel').classList.remove('hidden');
             document.getElementById('detail-title').innerText = "Point Intel";
-            document.getElementById('detail-body').innerHTML = '<div class="text-slate-500 italic">No alert active at this specific point. Checking local forecast...</div>';
+            document.getElementById('detail-body').innerHTML = '<div class="text-slate-500 italic">No active alerts at this specific point.</div>';
             document.getElementById('click-coords').innerText = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
             fetchPointForecast(lat.toFixed(4), lng.toFixed(4));
         });
